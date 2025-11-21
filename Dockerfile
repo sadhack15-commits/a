@@ -2,27 +2,21 @@ FROM kalilinux/kali-rolling
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install full Kali tools + SSH + Web terminal
+# Install tools
 RUN apt-get update && apt-get install -y \
-    kali-linux-default \
-    python3 python3-pip \
-    openssh-server \
-    ttyd \
+    kali-linux-headless \
+    nmap sqlmap nikto hydra metasploit-framework \
     curl wget git vim nano \
-    && apt-get clean
+    net-tools dnsutils iputils-ping \
+    python3 python3-pip \
+    ttyd \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Setup SSH
-RUN mkdir /var/run/sshd
-RUN echo 'root:toor' | chpasswd
-RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+# Workspace
+WORKDIR /root
 
-# Install ttyd (web terminal tốt hơn)
-RUN apt-get install -y ttyd
-
+# Expose port
 EXPOSE 10000
 
-# Start script
-COPY start.sh /start.sh
-RUN chmod +x /start.sh
-
-CMD ["/start.sh"]
+# Default command (sẽ bị override bởi Docker Command)
+CMD ["ttyd", "-p", "10000", "-W", "bash"]
